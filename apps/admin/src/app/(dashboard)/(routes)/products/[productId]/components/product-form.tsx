@@ -39,7 +39,7 @@ const formSchema0 = z.object({
    price: z.coerce.number().min(1),
    discount: z.coerce.number().min(0),
    stock: z.coerce.number().min(0),
-   categoryId: z.string().min(1),
+   categories: z.string().min(1),
    isFeatured: z.boolean().default(false).optional(),
    isAvailable: z.boolean().default(false).optional(),
    brandId: z.string().min(1),
@@ -51,7 +51,7 @@ const formSchema1 = z.object({
    price: z.coerce.number().min(1),
    discount: z.coerce.number().min(0),
    stock: z.coerce.number().min(0),
-   categoryId: z.string().min(1),
+   categories: z.string().min(1),
    isFeatured: z.boolean().default(false).optional(),
    isAvailable: z.boolean().default(false).optional(),
    brandId: z.any(),
@@ -302,7 +302,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
                   />
                   <FormField
                      control={form.control}
-                     name="categoryId"
+                     name="categories"
                      render={({ field }) => (
                         <FormItem>
                            <FormLabel>Category</FormLabel>

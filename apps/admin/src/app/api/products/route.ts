@@ -1,4 +1,5 @@
 import prisma from '@/lib/prisma'
+import { connect } from 'http2'
 import { NextResponse } from 'next/server'
 
 export const config = {
@@ -20,10 +21,16 @@ export async function POST(req: Request) {
 
       // Parse the JSON body
       const parsedData = JSON.parse(data)
-
+      const { categories, ...rest } = parsedData
+      console.log(categories)
       // Example of handling the parsed data (you can adjust based on your logic)
       const products = await prisma.product.create({
-         data: parsedData, // Assuming data is valid to insert into Prisma
+         data: {
+            ...rest,
+            categories: {
+               connect: { id: categories },
+            },
+         }, // Assuming data is valid to insert into Prisma
       })
 
       return NextResponse.json(products)
