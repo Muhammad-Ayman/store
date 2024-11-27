@@ -6,30 +6,23 @@ interface GraphData {
 }
 
 export const getGraphRevenue = async (): Promise<GraphData[]> => {
-   const paidOrders = await prisma.order.findMany({
-      where: {
-         isPaid: true,
-      },
-      include: {
-         orderItems: {
-            include: {
-               product: { include: { categories: true } },
-            },
-         },
-      },
-   })
+   const monthlyRevenue = await prisma.$queryRaw<
+      { month: number; total: number }[]
+   >`
+    SELECT
+      EXTRACT(MONTH FROM o."createdAt") - 1 AS month, -- Subtract 1 to align with JS months (0-11)
+      SUM(o."payable") AS total
+    FROM
+      "Order" o
+    WHERE
+      o."isPaid" = true
+    GROUP BY
+      month
+    ORDER BY
+      month
+  `
 
-   const monthlyRevenue: { [key: number]: number } = {}
-
-   // Grouping the orders by month and summing the revenue
-   for (const order of paidOrders) {
-      const month = order.createdAt.getMonth() // 0 for Jan, 1 for Feb, ...
-
-      // Adding the revenue for this order to the respective month
-      monthlyRevenue[month] = (monthlyRevenue[month] || 0) + order.payable
-   }
-
-   // Converting the grouped data into the format expected by the graph
+   // Initialize the graph data with all months set to zero
    const graphData: GraphData[] = [
       { name: 'Jan', total: 0 },
       { name: 'Feb', total: 0 },
@@ -45,9 +38,9 @@ export const getGraphRevenue = async (): Promise<GraphData[]> => {
       { name: 'Dec', total: 0 },
    ]
 
-   // Filling in the revenue data
-   for (const month in monthlyRevenue) {
-      graphData[parseInt(month)].total = monthlyRevenue[parseInt(month)]
+   // Update graphData with the actual totals
+   for (const { month, total } of monthlyRevenue) {
+      graphData[month].total = total
    }
 
    return graphData

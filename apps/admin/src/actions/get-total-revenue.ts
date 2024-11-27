@@ -1,25 +1,18 @@
 import prisma from '@/lib/prisma'
 
-export const getTotalRevenue = async () => {
-   const paidOrders = await prisma.order.findMany({
-      where: {
-         isPaid: true,
-      },
-      include: {
-         orderItems: {
-            include: {
-               product: { include: { categories: true } },
-            },
-         },
-      },
-   })
+export const getTotalRevenue = async (): Promise<number> => {
+   const result = await prisma.$queryRaw<{ totalrevenue: bigint }[]>`
+    SELECT
+      COALESCE(SUM(oi.price), 0) AS totalrevenue
+    FROM
+      "Order" o
+    JOIN
+      "OrderItem" oi
+      ON o.id = oi."orderId"
+    WHERE
+      o."isPaid" = true
+  `
 
-   const totalRevenue = paidOrders.reduce((total, order) => {
-      const orderTotal = order.orderItems.reduce((orderSum, item) => {
-         return orderSum + item.price
-      }, 0)
-      return total + orderTotal
-   }, 0)
-
-   return totalRevenue
+   // Convert the BigInt to a regular number
+   return Number(result[0]?.totalrevenue || 0)
 }

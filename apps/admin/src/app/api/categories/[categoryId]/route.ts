@@ -62,46 +62,29 @@ export async function PATCH(
    { params }: { params: { categoryId: string } }
 ) {
    try {
-      const userId = req.headers.get('X-USER-ID')
-
-      if (!userId) {
-         return new NextResponse('Unauthorized', { status: 401 })
-      }
-
+      const { categoryId } = params
       const body = await req.json()
+      const { title, description, bannerIds } = body
 
-      const { title, description, bannerId } = body
-
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
+      if (!categoryId) {
+         return new NextResponse('Category ID is required', { status: 400 })
       }
 
-      if (!title) {
-         return new NextResponse('Name is required', { status: 400 })
-      }
-
-      if (!params.categoryId) {
-         return new NextResponse('Category id is required', { status: 400 })
-      }
-
-      const updatedCategory = await prisma.category.update({
-         where: {
-            id: params.categoryId,
-         },
+      // Update the category and its relations
+      const category = await prisma.category.update({
+         where: { id: categoryId },
          data: {
             title,
             description,
             banners: {
-               connect: {
-                  id: bannerId,
-               },
+               set: { id: bannerIds }, // Replace existing relations
             },
          },
       })
 
-      return NextResponse.json(updatedCategory)
+      return NextResponse.json(category)
    } catch (error) {
-      console.error('[CATEGORY_PATCH]', error)
+      console.error('[CATEGORIES_PATCH]', error)
       return new NextResponse('Internal error', { status: 500 })
    }
 }

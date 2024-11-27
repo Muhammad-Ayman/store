@@ -32,6 +32,7 @@ import * as z from 'zod'
 const formSchema = z.object({
    title: z.string().min(2),
    description: z.string().min(1),
+   bannerIds: z.string(), // Ensure multiple banners
 })
 
 type CategoryFormValues = z.infer<typeof formSchema>
@@ -162,18 +163,36 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({
                      name="description"
                      render={({ field }) => (
                         <FormItem>
-                           <FormLabel>Banner</FormLabel>
+                           <FormLabel>description</FormLabel>
+                           <FormControl>
+                              <Input
+                                 disabled={loading}
+                                 placeholder="description"
+                                 {...field}
+                              />
+                           </FormControl>
+                           <FormMessage />
+                        </FormItem>
+                     )}
+                  />
+                  <FormField
+                     control={form.control}
+                     name="bannerIds"
+                     render={({ field }) => (
+                        <FormItem>
+                           <FormLabel>Banners</FormLabel>
                            <Select
+                              // Allow selecting multiple banners
                               disabled={loading}
-                              onValueChange={field.onChange}
+                              onValueChange={(value) => field.onChange(value)}
                               value={field.value}
                               defaultValue={field.value}
                            >
                               <FormControl>
                                  <SelectTrigger>
                                     <SelectValue
+                                       placeholder="Select banners"
                                        defaultValue={field.value}
-                                       placeholder="Select a banner"
                                     />
                                  </SelectTrigger>
                               </FormControl>

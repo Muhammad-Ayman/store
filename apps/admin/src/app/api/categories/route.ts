@@ -9,27 +9,28 @@ export async function POST(req: Request) {
          return new NextResponse('Unauthorized', { status: 401 })
       }
 
-      const body = await req.json()
-
-      const { title, description, bannerId } = body
+      const body = await req.json() // Explicitly parse the request body
+      console.log(body)
+      const { title, description, bannerIds } = body // Adjust to handle multiple banners
 
       if (!title) {
-         return new NextResponse('Name is required', { status: 400 })
+         return new NextResponse('Title is required', { status: 400 })
       }
 
-      if (!bannerId) {
-         return new NextResponse('Banner ID is required', { status: 400 })
+      if (!bannerIds) {
+         return new NextResponse(
+            'Banner IDs are required and must be an array',
+            { status: 400 }
+         )
       }
 
-      // Create a new category
+      // Create a new category with related banners
       const category = await prisma.category.create({
          data: {
             title,
             description,
             banners: {
-               connect: {
-                  id: bannerId,
-               },
+               connect: { id: bannerIds }, // Connect multiple banners
             },
          },
       })
