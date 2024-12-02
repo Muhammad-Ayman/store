@@ -26,7 +26,9 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
    }, [])
 
    const onUpload = (result: any) => {
-      onChange(result.info.secure_url)
+      if (result?.info?.secure_url) {
+         onChange(result.info.secure_url)
+      }
    }
 
    if (!isMounted) {
@@ -61,10 +63,19 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
                </div>
             ))}
          </div>
-         <CldUploadWidget onUpload={onUpload} uploadPreset="t4drjppf">
+         <CldUploadWidget
+            cloudName={process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME} // Use public cloud name here
+            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET} // Use public upload preset here
+            onUpload={onUpload}
+            options={{
+               maxFiles: 1,
+               multiple: false,
+               resourceType: 'image',
+            }}
+         >
             {({ open }) => {
                const onClick = () => {
-                  open()
+                  if (!disabled) open()
                }
 
                return (
